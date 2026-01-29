@@ -27,10 +27,10 @@
     <ClCompile Include="Sprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Star.cpp">
+    <ClCompile Include="WoodCutter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WoodCutter.cpp">
+    <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -278,9 +278,6 @@
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Star.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Something.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
@@ -288,6 +285,12 @@
       <Filter>Custom Headers</Filter>
     </ClInclude>
     <ClInclude Include="WoodCutter.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureName.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
   </ItemGroup>

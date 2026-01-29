@@ -3,6 +3,7 @@
 #include <SDL3_image/SDL_image.h>
 #include <string>
 #include <iostream>
+#include "TextureManager.h"
 
 
 class Sprite {
@@ -29,28 +30,23 @@ public:
     SDL_FlipMode flipMode = SDL_FLIP_NONE;
     SDL_Texture* walking_texture = nullptr;
 
-    Sprite(float x, float y, float w, float h, SDL_Renderer* renderer,
-        std::string path = "Sprites/3 SteamMan/SteamMan.png", std::string name="Default Sprite")
+    Sprite(float x, 
+        float y, 
+        float w, 
+        float h, 
+		TextureManager* texManager,
+        SDL_Renderer* renderer,
+        std::string defaultTexturePath = "Sprites/3 SteamMan/SteamMan.png", 
+        std::string name="Default Sprite", 
+        std::string walkingTexturePath = "Sprites/3 SteamMan/SteamMan_walk.png")
         : x(x), y(y), w(w), h(h), renderer(renderer)
     {
         this->rect = { x, y, w, h };
-        this->filepath = path;
         this->name = name;
         this->groundY = y;
-        texture = loadTexture(filepath);
-        walking_texture = loadTexture("Sprites/3 SteamMan/SteamMan_walk.png");
+        this->texture = texManager->getTexture(TextureName::DefaultT, defaultTexturePath);
+        this->walking_texture = texManager->getTexture(TextureName::DefaultWalkingT, walkingTexturePath);
     }
-
-    SDL_Texture* loadTexture(std::string filepath) {
-        SDL_Texture* newTex = IMG_LoadTexture(renderer, filepath.c_str());
-        if (newTex != nullptr) {
-            std::cout << "Loaded texture: " << filepath << " for character" << name << std::endl;
-            return newTex;
-        }
-        std::cout << "Failed to load texture: " << filepath << " for character" << name << std::endl;
-        
-    }
-   
 
     void animate_walking(float elapsed) {
         if (!isMoving) {
