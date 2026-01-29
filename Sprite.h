@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include "TextureManager.h"
+#include "InputComponent.h"
 
 
 class Sprite {
@@ -23,13 +24,13 @@ public:
     float animationTimer = 0.0f;
     float frameDuration = 0.1f; 
     bool isMoving = false;     
-
+    InputComponent* input = nullptr;
     SDL_Texture* texture = nullptr;
     SDL_FRect rect{};
     SDL_Renderer* renderer = nullptr;
     SDL_FlipMode flipMode = SDL_FLIP_NONE;
     SDL_Texture* walking_texture = nullptr;
-
+    void setInput(InputComponent* newInput) { input = newInput; }
     Sprite(float x, 
         float y, 
         float w, 
