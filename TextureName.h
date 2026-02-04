@@ -3,5 +3,6 @@ enum TextureName {
 	WoodCutterT,
 	WoodCutterWalkingT,
 	DefaultT,
-	DefaultWalkingT
+	DefaultWalkingT,
+	DefaultJumpingT
 };

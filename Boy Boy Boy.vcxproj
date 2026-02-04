@@ -145,13 +145,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AnimationManager.h" />
     <ClCompile Include="Boy Boy Boy.cpp" />
-    <ClCompile Include="InputComponent.cpp" />
     <ClCompile Include="Something.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="WoodCutter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\begin_code.h" />
@@ -235,13 +232,11 @@
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_version.h" />
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_video.h" />
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_vulkan.h" />
-    <ClInclude Include="InputComponent.h" />
-    <ClInclude Include="PlayerInput.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Something.h" />
     <ClInclude Include="Sprite.h" />
-    <ClInclude Include="TextureManager.h" />
-    <ClInclude Include="TextureName.h" />
-    <ClInclude Include="WoodCutter.h" />
+    <ClInclude Include="TextureCache.h" />
+    <ClInclude Include="UI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

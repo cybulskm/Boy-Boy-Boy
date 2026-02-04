@@ -27,17 +27,8 @@
     <ClCompile Include="Sprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WoodCutter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationManager.h">
-      <Filter>Custom Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="InputComponent.cpp">
-      <Filter>Custom Headers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -290,19 +281,13 @@
     <ClInclude Include="Sprite.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
-    <ClInclude Include="WoodCutter.h">
+    <ClInclude Include="TextureCache.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManager.h">
+    <ClInclude Include="Player.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
-    <ClInclude Include="TextureName.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="InputComponent.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerInput.h">
+    <ClInclude Include="UI.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
   </ItemGroup>
