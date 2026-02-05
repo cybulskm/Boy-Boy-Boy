@@ -146,7 +146,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Boy Boy Boy.cpp" />
-    <ClCompile Include="Something.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
@@ -232,11 +231,16 @@
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_version.h" />
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_video.h" />
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_vulkan.h" />
+    <ClInclude Include="CharacterData.h" />
+    <ClInclude Include="LoadGlobals.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="Something.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SpriteState.h" />
+    <ClInclude Include="SteamMan.h" />
     <ClInclude Include="TextureCache.h" />
     <ClInclude Include="UI.h" />
+    <ClInclude Include="WoodMan.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

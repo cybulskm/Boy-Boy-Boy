@@ -21,9 +21,6 @@
     <ClCompile Include="Boy Boy Boy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Something.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -275,9 +272,6 @@
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Something.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Sprite.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
@@ -288,6 +282,24 @@
       <Filter>Custom Headers</Filter>
     </ClInclude>
     <ClInclude Include="UI.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamMan.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteState.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterData.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadGlobals.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="WoodMan.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
   </ItemGroup>

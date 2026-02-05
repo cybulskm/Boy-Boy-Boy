@@ -2,8 +2,7 @@
 #include <SDL3/SDL.h>
 #include <map>
 #include <string>
-
-enum class SpriteState { IDLE, WALKING, JUMPING, ATTACKING };
+#include "SpriteState.h"
 
 class Sprite {
 public:
@@ -22,10 +21,11 @@ public:
     std::map<SpriteState, SDL_Texture*> animations;
     std::map<SpriteState, int> frameCounts;
 
+    bool canCollide = true;
 
     Sprite(float x, float y, float originalw, float originalh, float draww, float drawh, SDL_Renderer* renderer)
         : x(x), y(y), originalh(originalh), originalw(originalw), draww(draww), drawh(drawh), renderer(renderer) {
-        rect = { x, y, originalw, originalh };
+        rect = { x, y, draww, drawh };
 		srcRect = { 0.0f, 0.0f, originalw, originalh };
     }
 
@@ -36,9 +36,14 @@ public:
         animationTimer += elapsed;
         if (animationTimer >= frameDuration) {
             animationTimer = 0.0f;
-            currentFrame = (currentFrame + 1) % totalFrames;
+            if (currentState == SpriteState::ATTACK1 || currentState == SpriteState::ATTACK2) {
+                if (currentFrame < totalFrames - 1) currentFrame++;
+            }
+            else {
+                currentFrame = (currentFrame + 1) % totalFrames;
+            }
         }
-        srcRect.x = (float)currentFrame * srcRect.w;
+        srcRect.x = (float)currentFrame * originalw;
     }
     void modifyRender(Uint8 r, Uint8 g, Uint8 b) {
 		SDL_SetTextureColorMod(animations[currentState], r, g, b);
@@ -47,15 +52,28 @@ public:
     void draw() {
         SDL_Texture* tex = animations[currentState];
         if (tex) {
-            SDL_SetTextureColorMod(tex, modR, modG, modB);
+            if (modR != 255 || modG != 255 || modB != 255) {
+                SDL_SetTextureColorMod(tex, modR, modG, modB);
+            }
             SDL_RenderTextureRotated(renderer, tex, &srcRect, &rect, 0.0, NULL, flipMode);
-            SDL_SetTextureColorMod(tex, 255, 255, 255);
+            if (modR != 255 || modG != 255 || modB != 255) {
+                SDL_SetTextureColorMod(tex, 255, 255, 255);
+            }
         }
     }
     void setColour(Uint8 r, Uint8 g, Uint8 b) {
         modR = r;
         modG = g;
         modB = b;
+    }
+    bool intersects(const SDL_FRect& a, const SDL_FRect& b) {
+        return a.x < b.x + b.w &&
+            a.x + a.w > b.x &&
+            a.y < b.y + b.h &&
+            a.y + a.h > b.y;
+    }
+    SDL_FRect getBounds() const {
+        return SDL_FRect{ x, y, (float)draww, (float)drawh };
     }
 
     virtual ~Sprite() {}

@@ -8,6 +8,9 @@
 #include "TextureCache.h"   
 #include "Player.h"
 #include "UI.h"
+#include "SteamMan.h"
+#include "LoadGlobals.h"
+#include "Object.h"
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
@@ -21,37 +24,45 @@ static Uint64 last_time = 0;
 static float point_speeds[NUM_POINTS];
 static std::vector<Player*> entities;
 static std::vector<UI*> ui_elements;
-float velocityx = 1.0f;
+static std::vector<Object*> objects;
 Player* guy = nullptr;
 UI* ui = nullptr;
+Object* block = nullptr;
+static std::vector<CharacterData> characters;
 static TextureCache* globalCache = nullptr;
 
+std::vector<Sprite*> allCollidables;
 
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     std::cout << "The program is looking here: " << SDL_GetBasePath() << std::endl;
     SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_GAMEPAD);
     SDL_CreateWindowAndRenderer("BOY BOY BOY", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer);
     SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
     globalCache = new TextureCache(renderer);
-
-    globalCache->load("WOODMAN_IDLE", "Sprites/3 SteamMan/SteamMan.png");
-    globalCache->load("WOODMAN_WALKING", "Sprites/3 SteamMan/SteamMan_walk.png");
-    globalCache->load("WOODMAN_JUMPING", "Sprites/3 SteamMan/SteamMan_jump.png");
-    globalCache->load("UI", "Sprites/TITLE - Copy.png");
-
-    /*LOAD CHARACTER POSITIONS HERE*/
-    
+    loadTextures(globalCache);
+    characters = loadCharacters(globalCache);
     float startX = WINDOW_WIDTH / 2;
     float startY = WINDOW_HEIGHT / 2;
-    guy = new Player(startX, startY, globalCache, renderer);
-    ui = new UI(startX, 0, globalCache, renderer);
-    entities.push_back(guy);
-    ui_elements.push_back(ui);
-    
+    Player* p1 = new Player(400, 500, characters[0], renderer);
+    p1->playerID = 0;
+    entities.push_back(p1);
 
+    // Setup Player 2 (PvP!)
+    Player* p2 = new Player(1200, 500, characters[0], renderer);
+    p2->playerID = 1;
+    p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
+    entities.push_back(p2);
+    ui = new UI(startX, 0, globalCache, renderer);
+	block = new Object(startX - 250, startY + 50, globalCache, renderer);
+
+    ui_elements.push_back(ui);
+	objects.push_back(block);
     last_time = SDL_GetTicks();
+    for (auto o : objects) allCollidables.push_back(o);
+    for (auto e : entities) allCollidables.push_back(e);
     return SDL_APP_CONTINUE;
 }
 
@@ -61,32 +72,25 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void* appstate)
-{
-    // 1. Calculate Delta Time
-    const Uint64 now = SDL_GetTicks();
-    const float elapsed = (float)(now - last_time) / 1000.0f;
-    last_time = now;
-
+SDL_AppResult SDL_AppIterate(void* appstate) {
+    // 1. Time & Input
+    const float elapsed = (float)(SDL_GetTicks() - last_time) / 1000.0f;
+    last_time = SDL_GetTicks();
     const bool* keys = SDL_GetKeyboardState(NULL);
-    float speed = 300.0f; 
+
+    // 2. Logic (Update all first)
     for (auto entity : entities) {
-        speed -= 0.1f;
-		entity->handleInput(keys, speed, elapsed);
+        entity->handleInput(keys, elapsed);
     }
-    //guy->handleInput(keys, speed, elapsed);
-    
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    for (auto e : entities) e->update(elapsed);
+
+    // 3. Render
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
 
-    for (auto entity : entities) {
-        entity->update(elapsed);
-        entity->draw();
-    }
-	for (auto ui_element : ui_elements) {
-        ui_element->update(elapsed);
-        ui_element->draw();
-    }
+    for (auto obj : objects) obj->draw();
+    for (auto e : entities) e->draw();
+    for (auto ui : ui_elements) ui->draw();
 
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;
@@ -96,7 +100,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
     for (auto entity : entities) delete entity;
     for (auto ui_e : ui_elements) delete ui_e;
-
+	for (auto obj : objects) delete obj;
     globalCache->clear();
     delete globalCache; // Clean up the cache
 
