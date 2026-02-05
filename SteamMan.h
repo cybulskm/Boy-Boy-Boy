@@ -17,9 +17,9 @@ public:
         
         data.originalw = 48.0f;
         data.originalh = 48.0f;
-        data.draww = 96.0f;
-        data.drawh = 96.0f;
-        data.velocityX = 400.0f;
+        data.draww = 48.0f;
+        data.drawh = 48.0f;
+        data.velocityX = 500.0f;
         data.health = 150.0f;
         data.heavyAttackCoolDown = 5;
         data.frameCounts[SpriteState::IDLE] = 1;

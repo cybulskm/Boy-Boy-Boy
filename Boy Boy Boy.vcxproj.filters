@@ -302,5 +302,8 @@
     <ClInclude Include="WoodMan.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectPositions.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

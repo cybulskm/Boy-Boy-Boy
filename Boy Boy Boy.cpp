@@ -30,13 +30,22 @@ UI* ui = nullptr;
 Object* block = nullptr;
 static std::vector<CharacterData> characters;
 static TextureCache* globalCache = nullptr;
-
 std::vector<Sprite*> allCollidables;
+std::vector<Sprite*> allObjects;
+std::string gameMode = "PROD";
 
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-    std::cout << "The program is looking here: " << SDL_GetBasePath() << std::endl;
+    if (argv && argc > 0) {
+        for (int i = 1; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg == "-d" || arg == "--debug") {
+                std::cout << "Debug mode enabled!" << std::endl;
+				gameMode = "DEBUG";
+            }
+        }
+    }
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Init(SDL_INIT_GAMEPAD);
     SDL_CreateWindowAndRenderer("BOY BOY BOY", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer);
@@ -55,14 +64,30 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     p2->playerID = 1;
     p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
     entities.push_back(p2);
-    ui = new UI(startX, 0, globalCache, renderer);
-	block = new Object(startX - 250, startY + 50, globalCache, renderer);
+    ui = new UI(startX - 649/2, 0, globalCache, renderer);
+	block = new Object(startX - 250, WINDOW_HEIGHT - 50, globalCache, renderer);
 
     ui_elements.push_back(ui);
 	objects.push_back(block);
     last_time = SDL_GetTicks();
-    for (auto o : objects) allCollidables.push_back(o);
-    for (auto e : entities) allCollidables.push_back(e);
+    for (auto u : ui_elements) {
+        allObjects.push_back(u);
+	}
+    for (auto o : objects) {
+		if (o->canCollide) allCollidables.push_back(o);
+		allObjects.push_back(o);
+    }
+    for (auto e : entities) {
+        if (e->canCollide) allCollidables.push_back(e);
+		allObjects.push_back(e);
+    }
+
+    if (gameMode == "DEBUG") {
+		for (auto object : allObjects) {
+            object->debugMode = true;
+        }
+    }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -83,8 +108,11 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         entity->handleInput(keys, elapsed);
     }
     for (auto e : entities) e->update(elapsed);
+    for (auto u : ui_elements) u->update(elapsed);
 
-    // 3. Render
+	// 3. Collision Detection
+    resolveCollisions(allCollidables);
+    // 4. Render
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
 

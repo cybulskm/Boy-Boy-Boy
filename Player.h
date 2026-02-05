@@ -6,23 +6,23 @@
 #include "SpriteState.h"
 class Player : public Sprite {
 public:
-    int playerID;
+    int playerID = 0;
     bool isJumping = false;
     bool isMoving = false;
     bool isLightAttacking = false;
 	bool isHeavyAttacking = false;
-    float velocityY = 0.0f;
-	float velocityX = 300.0f;
+    bool isHurt = false;
     float groundY;
     const float gravity = 1500.0f;
     float health = 0.0f;
-    const std::string currentCharacter = "STEAMMAN";
+    float hurtTimer = 5.0f;
     int heavyAttackCoolDown = 0;
     Player(float x, float y, const CharacterData& charData, SDL_Renderer* renderer)
         : Sprite(x, y, charData.originalw, charData.originalh, charData.draww, charData.drawh, renderer)
     {
+		this->name = "Player " + std::to_string(playerID + 1);
         this->groundY = y;
-
+        
         // Copy the attributes from the character data to the player
         this->animations = charData.animations;
         this->velocityX = charData.velocityX;
@@ -30,6 +30,11 @@ public:
         this->heavyAttackCoolDown = charData.heavyAttackCoolDown;
 		this->frameCounts = charData.frameCounts;
 		this->currentState = SpriteState::IDLE;
+    }
+    void onCollision(Sprite* other) override {
+        if (other->name == "Enemy") {
+            this->setColour(255, 0, 0); // Turn red when hit!
+        }
     }
 
     void handleInput(const bool* keys, float elapsed) {
@@ -76,6 +81,14 @@ public:
                 isJumping = false;
             }
         }
+        if (isHurt) {
+			hurtTimer -= elapsed;
+            if (hurtTimer <= 0) {
+                isHurt = false;
+                hurt();
+				hurtTimer = 5.0f; // Reset timer for next time
+            }
+        }
 
         // 2. Animation State Priority (The "Visual" Layer)
         SpriteState lastState = currentState;
@@ -113,7 +126,8 @@ public:
         animate(elapsed);
     }
 
-    void isHurt() {
+    void hurt() {
+		std::cout << name << " got hurt!" << std::endl;
         setColour(255, 0, 0);
     }
 };

@@ -12,6 +12,7 @@ public:
     UI(float x, float y, TextureCache* texCache, SDL_Renderer* renderer)
         : Sprite(x, y, 689, 145, 689, 145, renderer)
     {
+        this->name = "UI BLOCK";
         currentState = SpriteState::IDLE; 
         frameCounts[SpriteState::IDLE] = 1;
         animations[SpriteState::IDLE] = texCache->get("UI");
@@ -22,7 +23,7 @@ public:
         
     }
     void update(float elapsed) {
-        float speed = 1000.0f;
+        float speed = 400.0f;
 
         if (modR == 255 && modG < 255 && modB == 0) modG = (Uint8)SDL_min(modG + (speed * elapsed), 255);
         else if (modG == 255 && modR > 0)             modR = (Uint8)SDL_max(modR - (speed * elapsed), 0);

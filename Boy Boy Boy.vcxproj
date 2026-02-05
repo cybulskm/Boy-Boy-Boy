@@ -234,6 +234,7 @@
     <ClInclude Include="CharacterData.h" />
     <ClInclude Include="LoadGlobals.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="ObjectPositions.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteState.h" />
