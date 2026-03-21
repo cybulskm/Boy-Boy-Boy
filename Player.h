@@ -1,122 +1,143 @@
 #pragma once
 #include "Sprite.h"
-#include "TextureCache.h"
 #include <iostream>
-#include "SteamMan.h"
 #include "SpriteState.h"
+
 class Player : public Sprite {
 public:
     int playerID = 0;
     bool isJumping = false;
     bool isMoving = false;
+    bool isCrouching = false;
+    bool isSliding = false;
     bool isLightAttacking = false;
-	bool isHeavyAttacking = false;
+    bool isHeavyAttacking = false;
+    bool isRolling = false;
+    bool isDead = false;
     bool isHurt = false;
+
     float groundY;
     const float gravity = 1500.0f;
-    float health = 0.0f;
-    float hurtTimer = 5.0f;
-    int heavyAttackCoolDown = 0;
+    float slideTimer = 0.0f;
+    const float slideDuration = 0.5f;
+
+    float slideCooldownTimer = 0.0f;
+    const float slideCooldownDuration = 1.2f;
+
     Player(float x, float y, const CharacterData& charData, SDL_Renderer* renderer)
-        : Sprite(x, y, charData.originalw, charData.originalh, charData.draww, charData.drawh, renderer)
+        : Sprite(x, y, charData, renderer)
     {
-		this->name = "Player " + std::to_string(playerID + 1);
+        this->name = charData.name;
         this->groundY = y;
-        
-        // Copy the attributes from the character data to the player
-        this->animations = charData.animations;
-        this->velocityX = charData.velocityX;
-        this->health = charData.health;
-        this->heavyAttackCoolDown = charData.heavyAttackCoolDown;
-		this->frameCounts = charData.frameCounts;
-		this->currentState = SpriteState::IDLE;
-    }
-    void onCollision(Sprite* other) override {
-        if (other->name == "Enemy") {
-            this->setColour(255, 0, 0); // Turn red when hit!
-        }
+        this->currentState = SpriteState::IDLE;
     }
 
     void handleInput(const bool* keys, float elapsed) {
         isMoving = false;
 
-        // Define controls based on Player ID
         SDL_Scancode up = (playerID == 0) ? SDL_SCANCODE_W : SDL_SCANCODE_UP;
         SDL_Scancode left = (playerID == 0) ? SDL_SCANCODE_A : SDL_SCANCODE_LEFT;
         SDL_Scancode right = (playerID == 0) ? SDL_SCANCODE_D : SDL_SCANCODE_RIGHT;
+        SDL_Scancode down = (playerID == 0) ? SDL_SCANCODE_S : SDL_SCANCODE_DOWN;
         SDL_Scancode atk1 = (playerID == 0) ? SDL_SCANCODE_1 : SDL_SCANCODE_N;
         SDL_Scancode atk2 = (playerID == 0) ? SDL_SCANCODE_2 : SDL_SCANCODE_M;
 
-        if (keys[left]) { x -= velocityX * elapsed; flipMode = SDL_FLIP_HORIZONTAL; isMoving = true; }
-        if (keys[right]) { x += velocityX * elapsed; flipMode = SDL_FLIP_NONE; isMoving = true; }
-        if (keys[up] && !isJumping) { velocityY = -700.0f; isJumping = true; }
-        
+        if (slideCooldownTimer > 0) slideCooldownTimer -= elapsed;
 
-        // Attacks
-        if (keys[atk1] && !isLightAttacking && !isHeavyAttacking) lightAttack();
-        if (keys[atk2] && !isHeavyAttacking && !isLightAttacking) heavyAttack();
+        if (keys[down] && !isJumping && !isRolling) {
+            if ((keys[left] || keys[right]) && !isSliding && slideCooldownTimer <= 0) {
+                isSliding = true;
+                slideTimer = slideDuration;
+                slideCooldownTimer = slideCooldownDuration;
+                if (keys[left]) flipMode = SDL_FLIP_HORIZONTAL;
+                if (keys[right]) flipMode = SDL_FLIP_NONE;
+            }
+            isCrouching = true;
+        }
+        else {
+            isCrouching = false;
+        }
+
+        bool canMove = !isCrouching && !isRolling && !isSliding && !isLightAttacking && !isHeavyAttacking;
+
+        if (isJumping) {
+            if (keys[left]) { x -= velocityX * elapsed; flipMode = SDL_FLIP_HORIZONTAL; }
+            if (keys[right]) { x += velocityX * elapsed; flipMode = SDL_FLIP_NONE; }
+        }
+        else if (canMove) {
+            if (keys[left]) { x -= velocityX * elapsed; flipMode = SDL_FLIP_HORIZONTAL; isMoving = true; }
+            else if (keys[right]) { x += velocityX * elapsed; flipMode = SDL_FLIP_NONE; isMoving = true; }
+        }
+
+        if (keys[up] && !isJumping && !isRolling && !isSliding && !isCrouching) {
+            velocityY = -800.0f;
+            isJumping = true;
+            y -= 5.0f;
+        }
+
+        if (keys[atk1] && !isLightAttacking && !isHeavyAttacking && !isRolling && !isJumping) lightAttack();
+        if (keys[atk2] && !isHeavyAttacking && !isLightAttacking && !isRolling && !isJumping) heavyAttack();
     }
 
-    void lightAttack() {
-        isLightAttacking = true;
-        currentState = SpriteState::ATTACK1;
-        currentFrame = 0;
-        animationTimer = 0.0f;
-    }
-
-    void heavyAttack() {
-        isHeavyAttacking = true;
-        currentState = SpriteState::ATTACK2;
-        currentFrame = 0;
-        animationTimer = 0.0f;
-    }
+    void lightAttack() { isLightAttacking = true; currentFrame = 0; animationTimer = 0.0f; }
+    void heavyAttack() { isHeavyAttacking = true; currentFrame = 0; animationTimer = 0.0f; }
 
     void update(float elapsed) {
-        // 1. Always run Physics (Movement and Jump work regardless of animation)
         if (isJumping) {
             velocityY += gravity * elapsed;
             y += velocityY * elapsed;
-            if (y >= groundY) {
+
+            if (y >= groundY && velocityY > 0) {
                 y = groundY;
                 isJumping = false;
-            }
-        }
-        if (isHurt) {
-			hurtTimer -= elapsed;
-            if (hurtTimer <= 0) {
-                isHurt = false;
-                hurt();
-				hurtTimer = 5.0f; // Reset timer for next time
+                isRolling = true;
+                currentFrame = 0;
+                animationTimer = 0.0f;
             }
         }
 
-        // 2. Animation State Priority (The "Visual" Layer)
-        SpriteState lastState = currentState;
+        if (isSliding) {
+            float dir = (flipMode == SDL_FLIP_HORIZONTAL) ? -1.0f : 1.0f;
+            x += (velocityX * 1.8f) * dir * elapsed;
+            slideTimer -= elapsed;
+            if (slideTimer <= 0) isSliding = false;
+        }
 
-        if (isLightAttacking) {
-            currentState = SpriteState::ATTACK1;
-            if (currentFrame >= frameCounts[currentState] - 1) {
-                isLightAttacking = false;
-            }
+        if (isRolling) {
+            float dir = (flipMode == SDL_FLIP_HORIZONTAL) ? -1.0f : 1.0f;
+            x += (velocityX * 0.8f) * dir * elapsed;
+        }
+
+        SpriteState nextState = SpriteState::IDLE;
+
+        if (isDead) nextState = SpriteState::DEAD;
+        else if (isLightAttacking) {
+            nextState = SpriteState::ATTACK1;
+            if (currentFrame >= frameCounts[nextState] - 1) isLightAttacking = false;
         }
         else if (isHeavyAttacking) {
-            currentState = SpriteState::ATTACK2;
-            if (currentFrame >= frameCounts[currentState] - 1) {
-                isHeavyAttacking = false;
-            }
-		}
+            nextState = SpriteState::ATTACK2;
+            if (currentFrame >= frameCounts[nextState] - 1) isHeavyAttacking = false;
+        }
         else if (isJumping) {
-            currentState = SpriteState::JUMPING;
+            nextState = SpriteState::JUMPING;
+        }
+        else if (isRolling) {
+            nextState = SpriteState::ROLLING;
+            if (currentFrame >= frameCounts[nextState] - 1) isRolling = false;
+        }
+        else if (isSliding) {
+            nextState = SpriteState::SLIDING;
+        }
+        else if (isCrouching) {
+            nextState = SpriteState::CROUCH;
         }
         else if (isMoving) {
-            currentState = SpriteState::WALKING;
-        }
-        else {
-            currentState = SpriteState::IDLE;
+            nextState = SpriteState::WALKING;
         }
 
-        // Reset timer only if the state actually changed
-        if (lastState != currentState) {
+        if (currentState != nextState) {
+            currentState = nextState;
             currentFrame = 0;
             animationTimer = 0.0f;
         }
@@ -124,10 +145,5 @@ public:
         rect.x = x;
         rect.y = y;
         animate(elapsed);
-    }
-
-    void hurt() {
-		std::cout << name << " got hurt!" << std::endl;
-        setColour(255, 0, 0);
     }
 };

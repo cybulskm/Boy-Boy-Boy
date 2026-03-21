@@ -305,5 +305,8 @@
     <ClInclude Include="ObjectPositions.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Knight.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

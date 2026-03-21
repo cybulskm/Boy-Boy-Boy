@@ -55,15 +55,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     characters = loadCharacters(globalCache);
     float startX = WINDOW_WIDTH / 2;
     float startY = WINDOW_HEIGHT / 2;
-    Player* p1 = new Player(400, 500, characters[0], renderer);
-    p1->playerID = 0;
+    Player* p1 = new Player(400, 500, characters[1], renderer);
+    p1->playerID = 1;
     entities.push_back(p1);
 
     // Setup Player 2 (PvP!)
-    Player* p2 = new Player(1200, 500, characters[0], renderer);
-    p2->playerID = 1;
-    p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
-    entities.push_back(p2);
+    //Player* p2 = new Player(1200, 500, characters[1], renderer);
+    //std::cout << "Player 2 initilized as:" << characters[1].name << std::endl;
+    //std::cout << "Player 2 width:" << characters[1].originalw << std::endl;
+
+    //p2->playerID = 1;
+    //p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
+    //entities.push_back(p2);
     ui = new UI(startX - 649/2, 0, globalCache, renderer);
 	block = new Object(startX - 250, WINDOW_HEIGHT - 50, globalCache, renderer);
 
@@ -87,7 +90,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
             object->debugMode = true;
         }
     }
-
+    // Inside SDL_AppInit, right before returning CONTINUE
+    for (auto e : entities) e->globalCacheRef = globalCache;
+    for (auto o : objects) o->globalCacheRef = globalCache;
+    for (auto u : ui_elements) u->globalCacheRef = globalCache;
     return SDL_APP_CONTINUE;
 }
 

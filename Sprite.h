@@ -2,13 +2,15 @@
 #include <SDL3/SDL.h>
 #include <map>
 #include <string>
-#include "SpriteState.h"
 #include <iostream>
+#include "SpriteState.h"
+#include "CharacterData.h"
+#include "TextureCache.h"
 
 class Sprite {
 public:
     float x = 0, y = 0, originalw = 0, originalh = 0, draww = 0, drawh = 0;
-    SDL_FRect rect{}; // This IS your hitbox
+    SDL_FRect rect{};
     SDL_FRect srcRect = { 0, 0, 0, 0 };
     Uint8 modR = 255, modG = 255, modB = 255;
     int currentFrame = 0;
@@ -19,22 +21,35 @@ public:
     SpriteState currentState = SpriteState::IDLE;
     SDL_FlipMode flipMode = SDL_FLIP_NONE;
     SDL_Renderer* renderer = nullptr;
+    TextureCache* globalCacheRef = nullptr; // For GIF lookup
 
     std::map<SpriteState, SDL_Texture*> animations;
+    std::map<SpriteState, std::string> animationNames;
     std::map<SpriteState, int> frameCounts;
 
     bool canCollide = true;
     bool debugMode = false;
     std::string name = "Unnamed Sprite";
 
+    // RESTORED: 7-argument constructor for Object.h and UI.h
     Sprite(float x, float y, float originalw, float originalh, float draww, float drawh, SDL_Renderer* renderer)
-        : x(x), y(y), originalh(originalh), originalw(originalw), draww(draww), drawh(drawh), renderer(renderer) {
+        : x(x), y(y), originalw(originalw), originalh(originalh), draww(draww), drawh(drawh), renderer(renderer) {
         rect = { x, y, draww, drawh };
         srcRect = { 0.0f, 0.0f, originalw, originalh };
     }
 
-    // Call this in your update loop to keep the hitbox synced with x and y
-    void update(float elapsed) {
+    // Constructor for Player/CharacterData
+    Sprite(float x, float y, const CharacterData& charData, SDL_Renderer* renderer)
+        : x(x), y(y), originalw(charData.originalw), originalh(charData.originalh),
+        draww(charData.draww), drawh(charData.drawh), renderer(renderer) {
+        this->rect = { x, y, draww, drawh };
+        this->animations = charData.animations;
+        this->animationNames = charData.animKeys;
+        this->frameCounts = charData.frameCounts;
+        this->velocityX = charData.velocityX;
+    }
+
+    virtual void update(float elapsed) {
         animate(elapsed);
         rect.x = x;
         rect.y = y;
@@ -43,7 +58,6 @@ public:
     void animate(float elapsed) {
         int totalFrames = frameCounts[currentState];
         if (totalFrames <= 0) return;
-
         animationTimer += elapsed;
         if (animationTimer >= frameDuration) {
             animationTimer = 0.0f;
@@ -54,53 +68,61 @@ public:
                 currentFrame = (currentFrame + 1) % totalFrames;
             }
         }
-        srcRect.x = (float)currentFrame * originalw;
     }
 
+    // FIXED: draw() now takes 0 arguments for the main loop
     void draw() {
-        SDL_Texture* tex = animations[currentState];
-        if (tex) {
-            if (modR != 255 || modG != 255 || modB != 255) {
-                SDL_SetTextureColorMod(tex, modR, modG, modB);
-            }
-            SDL_RenderTextureRotated(renderer, tex, &srcRect, &rect, 0.0, NULL, flipMode);
-            if (modR != 255 || modG != 255 || modB != 255) {
-                SDL_SetTextureColorMod(tex, 255, 255, 255);
-            }
+        SDL_Texture* tex = nullptr;
+        std::string key = "";
+
+        // 1. Try to get GIF frame from cache
+        if (animationNames.count(currentState)) {
+            key = animationNames[currentState];
+            if (globalCacheRef) tex = globalCacheRef->get(key, currentFrame);
         }
 
-        // DRAW HITBOX
-        if (debugMode) {
-            showHitBox();
+        // 2. Fallback to static texture (Spritesheet/Object/UI)
+        if (!tex && animations.count(currentState)) {
+            tex = animations[currentState];
         }
+
+        if (tex) {
+            SDL_FRect sRect = { 0, 0, originalw, originalh };
+            bool isGif = false;
+            if (globalCacheRef && !key.empty()) {
+                if (globalCacheRef->getCount(key, 0) > 1) isGif = true;
+            }
+
+            // If not a GIF, do the spritesheet slicing
+            if (!isGif) sRect.x = (float)currentFrame * originalw;
+
+            if (modR != 255 || modG != 255 || modB != 255) SDL_SetTextureColorMod(tex, modR, modG, modB);
+            SDL_RenderTextureRotated(renderer, tex, &sRect, &rect, 0.0, NULL, flipMode);
+            if (modR != 255 || modG != 255 || modB != 255) SDL_SetTextureColorMod(tex, 255, 255, 255);
+        }
+        if (debugMode) showHitBox();
     }
 
     void showHitBox() {
-		std::cout << "Debug enabled for  << name << " << name << std::endl;
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
-        SDL_RenderRect(renderer, &rect); // Outlines the current rect
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderRect(renderer, &rect);
     }
 
-    virtual void onCollision(Sprite* other) {
-        std::cout << name << " hit " << other->name << std::endl;
-    }
+    // RESTORED: getBounds()
+    SDL_FRect getBounds() const { return rect; }
 
-    void setColour(Uint8 r, Uint8 g, Uint8 b) {
-        modR = r;
-        modG = g;
-        modB = b;
+    // RESTORED: 1-argument intersects for LoadGlobals.h
+    bool intersects(Sprite* other) {
+        if (!other) return false;
+        SDL_FRect b = other->getBounds();
+        return rect.x < b.x + b.w && rect.x + rect.w > b.x && rect.y < b.y + b.h && rect.y + rect.h > b.y;
     }
 
     bool intersects(const SDL_FRect& a, const SDL_FRect& b) {
-        return a.x < b.x + b.w &&
-            a.x + a.w > b.x &&
-            a.y < b.y + b.h &&
-            a.y + a.h > b.y;
+        return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     }
 
-    SDL_FRect getBounds() const {
-        return rect; // Just return the rect we are already updating
-    }
-
+    void setColour(Uint8 r, Uint8 g, Uint8 b) { modR = r; modG = g; modB = b; }
+    virtual void onCollision(Sprite* other) {}
     virtual ~Sprite() {}
 };
