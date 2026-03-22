@@ -76,6 +76,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\SDL3_Image\SDL3_image-3.4.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\SDL3_Image\SDL3_image-3.4.0\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\SDL3_Image\SDL3_image-3.4.0\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -101,13 +109,13 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\SDL\include%(AdditionalLibraryDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\SDL3_Image\SDL3_image-3.4.0\include\SDL3_image;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);SDL3.lib;SDL3_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\SDL\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\SDL3_Image\SDL3_image-3.4.0\lib\x64;C:\SDL\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -135,13 +143,13 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\SDL\include%(AdditionalLibraryDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\SDL3_Image\SDL3_image-3.4.0\include\SDL3_image;C:\SDL3_Image\SDL3_image-3.4.0\include\SDL3_image;C:\SDL\include%(AdditionalLibraryDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);SDL3.lib;SDL3_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\SDL\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;SDL3_test.lib;%(AdditionalDependencies);SDL3_image.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\SDL3_Image\SDL3_image-3.4.0\lib\x64;C:\SDL\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -232,8 +240,10 @@
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_video.h" />
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_vulkan.h" />
     <ClInclude Include="CharacterData.h" />
+    <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Knight.h" />
     <ClInclude Include="LoadGlobals.h" />
+    <ClInclude Include="ManageCollision.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectPositions.h" />
     <ClInclude Include="Player.h" />

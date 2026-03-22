@@ -15,7 +15,7 @@ public:
     bool isRolling = false;
     bool isDead = false;
     bool isHurt = false;
-
+    bool isGrounded = false;
     float groundY;
     const float gravity = 1500.0f;
     float slideTimer = 0.0f;
@@ -24,15 +24,24 @@ public:
     float slideCooldownTimer = 0.0f;
     const float slideCooldownDuration = 1.2f;
 
+    float hurtTimer = 0.0f;
+    const float hurtDuration = 1.5f;
+
+    float attackIncreaseValue = 0.0f;
+    float baseAttackIncrease = 0.0f;
+
     Player(float x, float y, const CharacterData& charData, SDL_Renderer* renderer)
         : Sprite(x, y, charData, renderer)
     {
         this->name = charData.name;
-        this->groundY = y;
+        this->groundY = 1500;
         this->currentState = SpriteState::IDLE;
+        this->baseAttackIncrease = charData.attackHitboxIncrease;
     }
 
     void handleInput(const bool* keys, float elapsed) {
+        if (isHurt || isDead) return;
+
         isMoving = false;
 
         SDL_Scancode up = (playerID == 0) ? SDL_SCANCODE_W : SDL_SCANCODE_UP;
@@ -44,23 +53,24 @@ public:
 
         if (slideCooldownTimer > 0) slideCooldownTimer -= elapsed;
 
-        if (keys[down] && !isJumping && !isRolling) {
+        if (isGrounded && keys[down]) {
             if ((keys[left] || keys[right]) && !isSliding && slideCooldownTimer <= 0) {
                 isSliding = true;
+                isCrouching = false;
                 slideTimer = slideDuration;
                 slideCooldownTimer = slideCooldownDuration;
-                if (keys[left]) flipMode = SDL_FLIP_HORIZONTAL;
-                if (keys[right]) flipMode = SDL_FLIP_NONE;
             }
-            isCrouching = true;
+            else if (!isSliding) {
+                isCrouching = true;
+            }
         }
         else {
             isCrouching = false;
         }
 
-        bool canMove = !isCrouching && !isRolling && !isSliding && !isLightAttacking && !isHeavyAttacking;
+        bool canMove = !isCrouching && !isSliding && !isLightAttacking && !isHeavyAttacking;
 
-        if (isJumping) {
+        if (!isGrounded) {
             if (keys[left]) { x -= velocityX * elapsed; flipMode = SDL_FLIP_HORIZONTAL; }
             if (keys[right]) { x += velocityX * elapsed; flipMode = SDL_FLIP_NONE; }
         }
@@ -69,31 +79,53 @@ public:
             else if (keys[right]) { x += velocityX * elapsed; flipMode = SDL_FLIP_NONE; isMoving = true; }
         }
 
-        if (keys[up] && !isJumping && !isRolling && !isSliding && !isCrouching) {
+        if (keys[up] && isGrounded && !isSliding && !isCrouching) {
             velocityY = -800.0f;
+            isGrounded = false;
             isJumping = true;
-            y -= 5.0f;
         }
 
-        if (keys[atk1] && !isLightAttacking && !isHeavyAttacking && !isRolling && !isJumping) lightAttack();
-        if (keys[atk2] && !isHeavyAttacking && !isLightAttacking && !isRolling && !isJumping) heavyAttack();
+        if (keys[atk1] && !isLightAttacking && !isHeavyAttacking && !isSliding) lightAttack();
+        if (keys[atk2] && !isHeavyAttacking && !isLightAttacking && !isSliding) heavyAttack();
     }
 
-    void lightAttack() { isLightAttacking = true; currentFrame = 0; animationTimer = 0.0f; }
-    void heavyAttack() { isHeavyAttacking = true; currentFrame = 0; animationTimer = 0.0f; }
+    void lightAttack() {
+        if (!isLightAttacking && !isHeavyAttacking) {
+            isLightAttacking = true;
+            currentFrame = 0;
+            animationTimer = 0.0f;
+            attackIncreaseValue = baseAttackIncrease;
+        }
+    }
+
+    void heavyAttack() {
+        if (!isHeavyAttacking && !isLightAttacking) {
+            isHeavyAttacking = true;
+            currentFrame = 0;
+            animationTimer = 0.0f;
+            attackIncreaseValue = baseAttackIncrease;
+        }
+    }
+
+    SDL_FRect getHitbox() const override {
+        SDL_FRect hb;
+        hb.w = hitboxW + attackIncreaseValue;
+        hb.h = (isCrouching || isSliding) ? hitboxH * 0.5f : hitboxH;
+        hb.x = (flipMode == SDL_FLIP_NONE) ? x + hitboxOffsetX : x + hitboxOffsetX - attackIncreaseValue;
+        hb.y = (isCrouching || isSliding) ? y + hitboxOffsetY + (hitboxH * 0.5f) : y + hitboxOffsetY;
+        return hb;
+    }
 
     void update(float elapsed) {
-        if (isJumping) {
-            velocityY += gravity * elapsed;
-            y += velocityY * elapsed;
+        // Apply gravity constantly
+        velocityY += gravity * elapsed;
+        y += velocityY * elapsed;
 
-            if (y >= groundY && velocityY > 0) {
-                y = groundY;
-                isJumping = false;
-                isRolling = true;
-                currentFrame = 0;
-                animationTimer = 0.0f;
-            }
+
+        if (y >= groundY) {
+            y = groundY;
+            velocityY = 0;
+            isGrounded = true;
         }
 
         if (isSliding) {
@@ -103,38 +135,29 @@ public:
             if (slideTimer <= 0) isSliding = false;
         }
 
-        if (isRolling) {
-            float dir = (flipMode == SDL_FLIP_HORIZONTAL) ? -1.0f : 1.0f;
-            x += (velocityX * 0.8f) * dir * elapsed;
+        if (isHurt) {
+            hurtTimer -= elapsed;
+            if (hurtTimer <= 0) {
+                isHurt = false;
+                setColour(255, 255, 255);
+            }
         }
 
         SpriteState nextState = SpriteState::IDLE;
-
         if (isDead) nextState = SpriteState::DEAD;
+        else if (isHurt) nextState = SpriteState::HURT;
         else if (isLightAttacking) {
             nextState = SpriteState::ATTACK1;
-            if (currentFrame >= frameCounts[nextState] - 1) isLightAttacking = false;
+            if (currentFrame >= frameCounts[nextState] - 1) { isLightAttacking = false; attackIncreaseValue = 0; }
         }
         else if (isHeavyAttacking) {
             nextState = SpriteState::ATTACK2;
-            if (currentFrame >= frameCounts[nextState] - 1) isHeavyAttacking = false;
+            if (currentFrame >= frameCounts[nextState] - 1) { isHeavyAttacking = false; attackIncreaseValue = 0; }
         }
-        else if (isJumping) {
-            nextState = SpriteState::JUMPING;
-        }
-        else if (isRolling) {
-            nextState = SpriteState::ROLLING;
-            if (currentFrame >= frameCounts[nextState] - 1) isRolling = false;
-        }
-        else if (isSliding) {
-            nextState = SpriteState::SLIDING;
-        }
-        else if (isCrouching) {
-            nextState = SpriteState::CROUCH;
-        }
-        else if (isMoving) {
-            nextState = SpriteState::WALKING;
-        }
+        else if (isSliding) nextState = SpriteState::SLIDING;
+        else if (!isGrounded) nextState = SpriteState::JUMPING;
+        else if (isCrouching) nextState = SpriteState::CROUCH;
+        else if (isMoving) nextState = SpriteState::WALKING;
 
         if (currentState != nextState) {
             currentState = nextState;

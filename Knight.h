@@ -16,6 +16,8 @@ public:
         data.animKeys[SpriteState::CROUCH] = "KNIGHT_CROUCHING";
         data.animKeys[SpriteState::ROLLING] = "KNIGHT_ROLLING";
         data.animKeys[SpriteState::SLIDING] = "KNIGHT_SLIDING";
+        data.animKeys[SpriteState::HURT] = "KNIGHT_HURT";
+
 
         // Frame counts (Auto-detect if GIF)
         data.frameCounts[SpriteState::IDLE] = texCache->getCount("KNIGHT_IDLE", 0);
@@ -26,6 +28,8 @@ public:
         data.frameCounts[SpriteState::CROUCH] = texCache->getCount("KNIGHT_CROUCHING", 0);
         data.frameCounts[SpriteState::ROLLING] = texCache->getCount("KNIGHT_ROLLING", 0);
         data.frameCounts[SpriteState::SLIDING] = texCache->getCount("KNIGHT_SLIDING", 0);
+        data.frameCounts[SpriteState::HURT] = texCache->getCount("KNIGHT_SLIDING", 0);
+
 
 
 
@@ -37,5 +41,13 @@ public:
         data.health = 150.0f;
         data.heavyAttackCoolDown = 5;
         data.name = "Knight";
+        // CUSTOM HITBOX (This won't be overwritten because it's in the data struct)
+        data.hitboxW = 50.0f;   // The Knight is thin
+        data.hitboxH = 120.0f;  // He's tall
+        // Center the box horizontally: (TotalWidth - HitboxWidth) / 2
+        data.offsetX = (data.draww - data.hitboxW) / 2.0f;
+        // Put the box at the feet: (TotalHeight - HitboxHeight)
+        data.offsetY = data.drawh - data.hitboxH;
+        data.attackHitboxIncrease = 65.0f;
     }
 };

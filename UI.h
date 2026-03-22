@@ -13,9 +13,12 @@ public:
         : Sprite(x, y, 689, 145, 689, 145, renderer)
     {
         this->name = "UI BLOCK";
+		this->hitboxOffsetX = 0;
+		this->hitboxOffsetY = 0;
         currentState = SpriteState::IDLE; 
         frameCounts[SpriteState::IDLE] = 1;
         animations[SpriteState::IDLE] = texCache->get("UI");
+        
 
 		this->modR = 255;
 		this->modG = 0;

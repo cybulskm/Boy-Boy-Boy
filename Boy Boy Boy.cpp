@@ -11,6 +11,7 @@
 #include "SteamMan.h"
 #include "LoadGlobals.h"
 #include "Object.h"
+#include "CollisionManager.h"
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 900
@@ -33,7 +34,9 @@ static TextureCache* globalCache = nullptr;
 std::vector<Sprite*> allCollidables;
 std::vector<Sprite*> allObjects;
 std::string gameMode = "PROD";
+std::set<std::string> previousCollisions;
 
+static CollisionManager colManager;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -55,18 +58,21 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     characters = loadCharacters(globalCache);
     float startX = WINDOW_WIDTH / 2;
     float startY = WINDOW_HEIGHT / 2;
-    Player* p1 = new Player(400, 500, characters[1], renderer);
-    p1->playerID = 1;
+   
+    // Player 1
+    Player* p1 = new Player(startX - 250, WINDOW_HEIGHT/2, characters[1], renderer);
+    p1->playerID = 0;
     entities.push_back(p1);
 
     // Setup Player 2 (PvP!)
-    //Player* p2 = new Player(1200, 500, characters[1], renderer);
-    //std::cout << "Player 2 initilized as:" << characters[1].name << std::endl;
-    //std::cout << "Player 2 width:" << characters[1].originalw << std::endl;
-
-    //p2->playerID = 1;
-    //p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
-    //entities.push_back(p2);
+    Player* p2 = new Player(450 + startX - 649 / 2 , WINDOW_HEIGHT / 2, characters[1], renderer);
+    std::cout << "Player 2 initilized as:" << characters[1].name << std::endl;
+    std::cout << "Player 2 width:" << characters[1].originalw << std::endl;
+    p2->playerID = 1;
+    p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
+    entities.push_back(p2);
+    
+    // UI elements
     ui = new UI(startX - 649/2, 0, globalCache, renderer);
 	block = new Object(startX - 250, WINDOW_HEIGHT - 50, globalCache, renderer);
 
@@ -117,7 +123,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     for (auto u : ui_elements) u->update(elapsed);
 
 	// 3. Collision Detection
-    resolveCollisions(allCollidables);
+    colManager.update(allCollidables, previousCollisions);    
     // 4. Render
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);

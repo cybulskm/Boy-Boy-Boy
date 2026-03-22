@@ -18,6 +18,9 @@ public:
     float frameDuration = 0.1f;
     float velocityY = 0.0f;
     float velocityX = 0.0f;
+    float hitboxOffsetX = 0, hitboxOffsetY = 0;
+    float hitboxW = 0, hitboxH = 0;
+    int hitCount = 0;
     SpriteState currentState = SpriteState::IDLE;
     SDL_FlipMode flipMode = SDL_FLIP_NONE;
     SDL_Renderer* renderer = nullptr;
@@ -42,7 +45,15 @@ public:
     Sprite(float x, float y, const CharacterData& charData, SDL_Renderer* renderer)
         : x(x), y(y), originalw(charData.originalw), originalh(charData.originalh),
         draww(charData.draww), drawh(charData.drawh), renderer(renderer) {
+
         this->rect = { x, y, draww, drawh };
+
+        // Use custom data if it exists, otherwise use the 40%/80% default
+        this->hitboxW = (charData.hitboxW > 0) ? charData.hitboxW : draww * 0.4f;
+        this->hitboxH = (charData.hitboxH > 0) ? charData.hitboxH : drawh * 0.8f;
+        this->hitboxOffsetX = (charData.offsetX > 0) ? charData.offsetX : (draww - hitboxW) / 2.0f;
+        this->hitboxOffsetY = (charData.offsetY > 0) ? charData.offsetY : (drawh - hitboxH);
+
         this->animations = charData.animations;
         this->animationNames = charData.animKeys;
         this->frameCounts = charData.frameCounts;
@@ -103,22 +114,28 @@ public:
         if (debugMode) showHitBox();
     }
 
-    void showHitBox() {
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderRect(renderer, &rect);
-    }
-
     // RESTORED: getBounds()
     SDL_FRect getBounds() const { return rect; }
 
-    // RESTORED: 1-argument intersects for LoadGlobals.h
-    bool intersects(Sprite* other) {
-        if (!other) return false;
-        SDL_FRect b = other->getBounds();
-        return rect.x < b.x + b.w && rect.x + rect.w > b.x && rect.y < b.y + b.h && rect.y + rect.h > b.y;
-    }
 
     bool intersects(const SDL_FRect& a, const SDL_FRect& b) {
+        return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    }
+    // Helper to get the actual physical box
+    virtual SDL_FRect getHitbox()  const{
+        return { x + hitboxOffsetX, y + hitboxOffsetY, hitboxW, hitboxH };
+    }
+
+    void showHitBox() {
+        SDL_FRect hb = getHitbox();
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderRect(renderer, &hb); // Draw the REAL box
+    }
+
+    bool intersects(Sprite* other) {
+        if (!other) return false;
+        SDL_FRect a = getHitbox();
+        SDL_FRect b = other->getHitbox();
         return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     }
 

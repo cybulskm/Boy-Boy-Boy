@@ -16,4 +16,9 @@ struct CharacterData {
     float health = 0;
     int heavyAttackCoolDown = 0;
     std::string name;
+    float hitboxW = 0;
+    float hitboxH = 0;
+    float offsetX = 0;
+    float offsetY = 0;
+    float attackHitboxIncrease;
 };

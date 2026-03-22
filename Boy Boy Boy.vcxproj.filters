@@ -308,5 +308,11 @@
     <ClInclude Include="Knight.h">
       <Filter>Custom Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ManageCollision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Custom Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
