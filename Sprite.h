@@ -141,5 +141,6 @@ public:
 
     void setColour(Uint8 r, Uint8 g, Uint8 b) { modR = r; modG = g; modB = b; }
     virtual void onCollision(Sprite* other) {}
+    virtual void handleInput(const bool* keys, float elapsed) {} // Added for unified sprite processing
     virtual ~Sprite() {}
 };

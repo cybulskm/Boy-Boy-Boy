@@ -4,19 +4,25 @@
 #include "SpriteState.h"
 class Object : public Sprite {
 public:
-    Object(float x, float y, TextureCache* texCache, SDL_Renderer* renderer)
-        : Sprite(x, y, 223, 32, 800, 50, renderer)
+    Object(float x, float y, const CharacterData& charData, SDL_Renderer* renderer)
+        : Sprite(x, y, charData, renderer)
     {
         currentState = SpriteState::IDLE;
         frameCounts[SpriteState::IDLE] = 1;
-        animations[SpriteState::IDLE] = texCache->get("BLOCK");
         this->name = "BLOCK";
         this->canCollide = true;
-
-        // Hitbox matches the visual rectangle exactly
+    }
+    Object(float x, float y, float originalw, float originalh, float draww, float drawh, SDL_Renderer* renderer)
+        : Sprite(x, y, originalw, originalh, draww, drawh, renderer)
+    {
+        currentState = SpriteState::IDLE;
+        frameCounts[SpriteState::IDLE] = 1;
+        this->name = "BLOCK";
+        this->canCollide = true;
         this->hitboxOffsetX = 0;
         this->hitboxOffsetY = 0;
-        this->hitboxW = 800;
-        this->hitboxH = 50;
+        this->hitboxW = draww;
+        this->hitboxH = drawh;
     }
+
 };

@@ -245,14 +245,20 @@
     <ClInclude Include="LoadGlobals.h" />
     <ClInclude Include="ManageCollision.h" />
     <ClInclude Include="Object.h" />
-    <ClInclude Include="ObjectPositions.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteState.h" />
     <ClInclude Include="SteamMan.h" />
     <ClInclude Include="TextureCache.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="WoodMan.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

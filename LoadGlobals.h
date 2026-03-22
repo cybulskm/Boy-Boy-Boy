@@ -7,12 +7,13 @@
 #include "CharacterData.h"
 #include <iostream>
 #include <string>
+#include "Object.h"
 
 std::string base_path = "Sprites";
 std::string steam_man_path = base_path + "/3 SteamMan";
-std::string knight_path = base_path + "/GifSet1/NoOutline";
-std::string knight_path_gif = knight_path + "/120x80_gifs";
-std::string knight_path_spritesheet = knight_path + "/120x80_PNGSheets";
+std::string knight_path = base_path + "/Knight";
+std::string knight_path_gif = knight_path + "/gifs";
+std::string knight_path_spritesheet = knight_path + "/spritesheets";
 
 void loadTextures(TextureCache* globalCache) {
     //STEAM MAN
@@ -47,11 +48,8 @@ void unloadTextures(TextureCache* globalCache) {
 
 static std::vector<CharacterData> loadCharacters(TextureCache* globalCache) {
     static std::vector<CharacterData> characters = {};
-    SteamMan steamMan(globalCache);
-    characters.push_back(steamMan.data);
-    Knight knight(globalCache);
-    characters.push_back(knight.data);
-
+    characters.push_back(createSteamMan(globalCache));
+    characters.push_back(createKnight(globalCache));
 	return characters;
 }
 
@@ -59,7 +57,18 @@ void loadEnviornment() {
         // Placeholder for future environment loading logic
 }
 
-void loadObjects() {}
+static std::vector<Sprite*> loadObjects(TextureCache* globalCache, SDL_Renderer* renderer) {
+    std::vector<Sprite*> allObjects;
+    struct ObjectPos { float x, y, w, h; };
+    std::vector<ObjectPos> positions = { {400, 836, 800, 64}, {0, 400, 223, 32} };
+
+    for (const auto& pos : positions) {
+        Object* obj = new Object(pos.x, pos.y, 223, 32, pos.w, pos.h, renderer);
+        obj->animations[SpriteState::IDLE] = globalCache->get("BLOCK");;
+        allObjects.push_back(obj);
+    }
+    return allObjects;
+}
 
 void loadPlayers() {}
 

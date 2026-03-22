@@ -23,13 +23,12 @@ static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static Uint64 last_time = 0;
 static float point_speeds[NUM_POINTS];
-static std::vector<Player*> entities;
-static std::vector<UI*> ui_elements;
-static std::vector<Object*> objects;
+
 Player* guy = nullptr;
 UI* ui = nullptr;
 Object* block = nullptr;
 static std::vector<CharacterData> characters;
+static std::vector<Sprite*> blocks;
 static TextureCache* globalCache = nullptr;
 std::vector<Sprite*> allCollidables;
 std::vector<Sprite*> allObjects;
@@ -37,7 +36,12 @@ std::string gameMode = "PROD";
 std::set<std::string> previousCollisions;
 
 static CollisionManager colManager;
-
+struct GameState {
+	SDL_Window* window = nullptr;
+	SDL_Renderer* renderer = nullptr;
+	TextureCache* cache = nullptr;
+	std::vector<Sprite*> allObjects;
+};
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     if (argv && argc > 0) {
@@ -48,6 +52,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 				gameMode = "DEBUG";
             }
         }
+    }
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD) < 0) {
+        return SDL_APP_FAILURE;
     }
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Init(SDL_INIT_GAMEPAD);
@@ -60,47 +67,40 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     float startY = WINDOW_HEIGHT / 2;
    
     // Player 1
-    Player* p1 = new Player(startX - 250, WINDOW_HEIGHT/2, characters[1], renderer);
-    p1->playerID = 0;
-    entities.push_back(p1);
+	Player* p1 = new Player(startX - 250, WINDOW_HEIGHT/2, characters[1], renderer);
+	p1->playerID = 0;
+	allObjects.push_back(p1);
 
-    // Setup Player 2 (PvP!)
-    Player* p2 = new Player(450 + startX - 649 / 2 , WINDOW_HEIGHT / 2, characters[1], renderer);
-    std::cout << "Player 2 initilized as:" << characters[1].name << std::endl;
-    std::cout << "Player 2 width:" << characters[1].originalw << std::endl;
-    p2->playerID = 1;
-    p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
-    entities.push_back(p2);
-    
-    // UI elements
-    ui = new UI(startX - 649/2, 0, globalCache, renderer);
-	block = new Object(startX - 250, WINDOW_HEIGHT - 50, globalCache, renderer);
+	// Setup Player 2 (PvP!)
+	//Player* p2 = new Player(450 + startX - 649 / 2 , WINDOW_HEIGHT / 2, characters[1], renderer);
+	//std::cout << "Player 2 initilized as:" << characters[1].name << std::endl;
+	//std::cout << "Player 2 width:" << characters[1].originalw << std::endl;
+	//p2->playerID = 1;
+	//p2->flipMode = SDL_FLIP_HORIZONTAL; // Face the other player
+	//allObjects.push_back(p2);
 
-    ui_elements.push_back(ui);
-	objects.push_back(block);
-    last_time = SDL_GetTicks();
-    for (auto u : ui_elements) {
-        allObjects.push_back(u);
+	// UI elements
+	blocks = loadObjects(globalCache, renderer);
+
+	//get rid of boy boy boy for now
+	//ui = new UI(startX - 689 /2, 0, globalCache, renderer);
+	//allObjects.push_back(ui);
+
+	allObjects.insert(allObjects.end(), blocks.begin(), blocks.end());
+	last_time = SDL_GetTicks();
+
+	for (auto obj : allObjects) {
+		if (obj->canCollide) allCollidables.push_back(obj);
 	}
-    for (auto o : objects) {
-		if (o->canCollide) allCollidables.push_back(o);
-		allObjects.push_back(o);
-    }
-    for (auto e : entities) {
-        if (e->canCollide) allCollidables.push_back(e);
-		allObjects.push_back(e);
-    }
 
-    if (gameMode == "DEBUG") {
+	if (gameMode == "DEBUG") {
 		for (auto object : allObjects) {
-            object->debugMode = true;
-        }
-    }
-    // Inside SDL_AppInit, right before returning CONTINUE
-    for (auto e : entities) e->globalCacheRef = globalCache;
-    for (auto o : objects) o->globalCacheRef = globalCache;
-    for (auto u : ui_elements) u->globalCacheRef = globalCache;
-    return SDL_APP_CONTINUE;
+			object->debugMode = true;
+		}
+	}
+	// Inside SDL_AppInit, right before returning CONTINUE
+	for (auto obj : allObjects) obj->globalCacheRef = globalCache;
+	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
@@ -110,39 +110,42 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
-    // 1. Time & Input
-    const float elapsed = (float)(SDL_GetTicks() - last_time) / 1000.0f;
-    last_time = SDL_GetTicks();
-    const bool* keys = SDL_GetKeyboardState(NULL);
+	// 1. Time & Input
+	const float elapsed = (float)(SDL_GetTicks() - last_time) / 1000.0f;
+	last_time = SDL_GetTicks();
+	const bool* keys = SDL_GetKeyboardState(NULL);
 
-    // 2. Logic (Update all first)
-    for (auto entity : entities) {
-        entity->handleInput(keys, elapsed);
-    }
-    for (auto e : entities) e->update(elapsed);
-    for (auto u : ui_elements) u->update(elapsed);
+	// 2. Logic (Update all first)
+	for (auto obj : allObjects) {
+		obj->handleInput(keys, elapsed);
+		obj->update(elapsed);
+	}
 
 	// 3. Collision Detection
-    colManager.update(allCollidables, previousCollisions);    
-    // 4. Render
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderClear(renderer);
+	colManager.update(allCollidables, previousCollisions);    
 
-    for (auto obj : objects) obj->draw();
-    for (auto e : entities) e->draw();
-    for (auto ui : ui_elements) ui->draw();
+	// 4. Render
+	SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+	SDL_RenderClear(renderer);
 
-    SDL_RenderPresent(renderer);
-    return SDL_APP_CONTINUE;
+	for (auto obj : allObjects) {
+		obj->draw();
+	}
+
+	SDL_RenderPresent(renderer);
+	return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
-    for (auto entity : entities) delete entity;
-    for (auto ui_e : ui_elements) delete ui_e;
-	for (auto obj : objects) delete obj;
-    globalCache->clear();
-    delete globalCache; // Clean up the cache
+	for (auto obj : allObjects) {
+		delete obj;
+	}
+	allObjects.clear();
+	allCollidables.clear();
 
-    SDL_Quit();
+	globalCache->clear();
+	delete globalCache; // Clean up the cache
+
+	SDL_Quit();
 }

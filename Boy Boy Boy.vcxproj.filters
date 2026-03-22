@@ -16,6 +16,21 @@
     <Filter Include="Custom Headers">
       <UniqueIdentifier>{025f3673-c846-41df-a22b-542585d2311a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Custom Headers\Characters">
+      <UniqueIdentifier>{ac86fa27-1931-4c53-91b5-9d0c4a4362d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Custom Headers\Sprites">
+      <UniqueIdentifier>{fc759205-cefb-4e41-8504-f185a4b16fba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Custom Headers\Logic">
+      <UniqueIdentifier>{3b4a7bb7-814b-4c38-9dbe-4c8c896fc7d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Custom Headers\Level">
+      <UniqueIdentifier>{da94f6a6-ab13-442b-8678-36c13c6b546d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Custom Headers\Network">
+      <UniqueIdentifier>{55598bfe-7dc8-4884-876d-0a96f70e1625}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Boy Boy Boy.cpp">
@@ -272,47 +287,57 @@
     <ClInclude Include="..\..\..\Downloads\Pure-Magic-main\Pure-Magic-main\src\include\SDL2\SDL_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sprite.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureCache.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="UI.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="SteamMan.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteState.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="CharacterData.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="LoadGlobals.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="WoodMan.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectPositions.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Knight.h">
-      <Filter>Custom Headers</Filter>
-    </ClInclude>
     <ClInclude Include="ManageCollision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>Custom Headers</Filter>
+    <ClInclude Include="CharacterData.h">
+      <Filter>Custom Headers\Characters</Filter>
     </ClInclude>
+    <ClInclude Include="Knight.h">
+      <Filter>Custom Headers\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Custom Headers\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamMan.h">
+      <Filter>Custom Headers\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="WoodMan.h">
+      <Filter>Custom Headers\Characters</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteState.h">
+      <Filter>Custom Headers\Sprites</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>Custom Headers\Sprites</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadGlobals.h">
+      <Filter>Custom Headers\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureCache.h">
+      <Filter>Custom Headers\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Custom Headers\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>Custom Headers\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Custom Headers\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

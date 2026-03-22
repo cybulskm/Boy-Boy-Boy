@@ -20,5 +20,19 @@ struct CharacterData {
     float hitboxH = 0;
     float offsetX = 0;
     float offsetY = 0;
-    float attackHitboxIncrease;
+    float attackHitboxIncrease = 0;
+    CharacterData() {};
+    //for blocks
+    CharacterData(float originalw, float originalh, float draww, float drawh, std::string name) {
+        this->originalw = originalw;
+        this->originalh = originalh;
+        this->draww = draww;
+        this->drawh = drawh;
+        this->name = name;
+        // Hitbox matches the visual rectangle exactly
+        this->offsetX = 0;
+        this->offsetY = 0;
+        this->hitboxW = draww;
+        this->hitboxH = drawh;
+    }
 };

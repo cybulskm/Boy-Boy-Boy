@@ -26,7 +26,7 @@ public:
         
     }
     void update(float elapsed) {
-        float speed = 400.0f;
+        float speed = 600.0f;
 
         if (modR == 255 && modG < 255 && modB == 0) modG = (Uint8)SDL_min(modG + (speed * elapsed), 255);
         else if (modG == 255 && modR > 0)             modR = (Uint8)SDL_max(modR - (speed * elapsed), 0);
